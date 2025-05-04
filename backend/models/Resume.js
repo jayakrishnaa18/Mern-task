@@ -1,10 +1,10 @@
 const mongoose = require('mongoose');
 
 const ResumeSchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Link to User
-  templateType: { type: String, required: true }, // Fresher / Experienced / Non-IT
-  formData: { type: Object, required: true }, // Form fields like name, email, skills etc
-  createdAt: { type: Date, default: Date.now }, // When created
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Changed from userId → user
+  templateType: { type: String, required: true },
+  resumeData: { type: Object, required: true }, // Changed from formData → resumeData
+  createdAt: { type: Date, default: Date.now },
 });
 
 module.exports = mongoose.model('Resume', ResumeSchema);

@@ -1,48 +1,38 @@
 const express = require('express');
 const router = express.Router();
 const Resume = require('../models/Resume');
-const { verifyToken } = require('../middleware/authMiddleware'); // Protect route
+const { protect } = require('../middleware/authMiddleware');
+const asyncHandler = require('express-async-handler');
 
-// Save Resume
-router.post('/save', verifyToken, async (req, res) => {
-  try {
-    const { templateType, formData } = req.body;
+// Save resume
+router.post('/save', protect, asyncHandler(async (req, res) => {
+  const { templateType, resumeData } = req.body;
 
-    const newResume = new Resume({
-      userId: req.user.id,
-      templateType,
-      formData,
-    });
+  const newResume = new Resume({
+    user: req.user.id,  // ✅ Matches what's decoded from JWT
+    templateType,
+    resumeData,
+  });
+  
 
-    await newResume.save();
-    res.status(201).json({ message: 'Resume saved successfully!', resume: newResume });
-  } catch (error) {
-    console.error('Error saving resume:', error);
-    res.status(500).json({ message: 'Server Error' });
+  const saved = await newResume.save();
+  res.status(201).json({ message: 'Resume saved successfully.', resume: saved });
+}));
+
+// Load all resumes of user
+router.get('/load', protect, asyncHandler(async (req, res) => {
+  const resumes = await Resume.find({ user: req.user._id }).sort({ createdAt: -1 });
+  res.json({ resumes });
+}));
+
+// View specific resume
+router.get('/:id', protect, asyncHandler(async (req, res) => {
+  const resume = await Resume.findById(req.params.id);
+  if (!resume || resume.user.toString() !== req.user._id.toString()) {
+    res.status(404).json({ message: 'Resume not found' });
+  } else {
+    res.json({ resume });
   }
-});
-
-// Get All Saved Resumes for a User
-router.get('/my-resumes', verifyToken, async (req, res) => {
-  try {
-    const resumes = await Resume.find({ userId: req.user.id }).sort({ createdAt: -1 });
-    res.json(resumes);
-  } catch (error) {
-    console.error('Error fetching resumes:', error);
-    res.status(500).json({ message: 'Server Error' });
-  }
-});
-
-// Delete a Resume
-router.delete('/delete/:id', verifyToken, async (req, res) => {
-  try {
-    const resumeId = req.params.id;
-    await Resume.deleteOne({ _id: resumeId, userId: req.user.id });
-    res.json({ message: 'Resume deleted successfully' });
-  } catch (error) {
-    console.error('Error deleting resume:', error);
-    res.status(500).json({ message: 'Server Error' });
-  }
-});
+}));
 
 module.exports = router;

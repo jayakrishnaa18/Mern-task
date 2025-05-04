@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import axios from 'axios';
 
 const ResumeBuilder = () => {
   const { templateType } = useParams();
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     fullName: '',
@@ -59,8 +60,8 @@ const ResumeBuilder = () => {
 
     html2canvas(resume, {
       scale: 2,
-      scrollY: -window.scrollY, // Important to capture full page not just visible screen
-      useCORS: true, // If your images are from external links
+      scrollY: -window.scrollY,
+      useCORS: true,
     }).then((canvas) => {
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF('p', 'mm', 'a4');
@@ -86,31 +87,26 @@ const ResumeBuilder = () => {
     });
   };
 
-
-
-  const saveResume = async () => {
+  const handleSaveResume = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert('You must be logged in to save a resume.');
+      return;
+    }
+  
     try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        alert('Please login to save your resume!');
-        return;
-      }
-
-      const response = await axios.post('http://localhost:5000/api/resume/save', {
+      await axios.post('http://localhost:5000/api/resume/save', {
         templateType,
         resumeData: formData,
       }, {
         headers: { Authorization: `Bearer ${token}` },
       });
-
-      if (response.status === 200 || response.status === 201) {
-        alert('Resume saved successfully to database!');
-      } else {
-        alert('Failed to save resume.');
-      }
+  
+      alert('Resume saved successfully!');
+      navigate('/dashboard');
     } catch (error) {
-      console.error('Error saving resume:', error);
-      alert('Something went wrong while saving.');
+      console.error('Failed to save resume:', error.response?.data || error.message);
+      alert(error.response?.data?.message || 'Failed to save resume. Check console for details.');
     }
   };
 
@@ -119,7 +115,7 @@ const ResumeBuilder = () => {
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold capitalize text-gray-800">Build {templateType} Resume</h1>
         <div className="flex gap-4">
-          <button onClick={saveResume} className="bg-green-600 text-white px-5 py-2 rounded-md hover:bg-green-700 transition">
+          <button onClick={handleSaveResume} className="bg-green-600 text-white px-5 py-2 rounded-md hover:bg-green-700 transition">
             Save Resume
           </button>
           <button onClick={downloadResume} className="bg-blue-600 text-white px-5 py-2 rounded-md hover:bg-blue-700 transition">
@@ -261,116 +257,111 @@ const ResumeBuilder = () => {
         </div>
 
         {/* Resume Preview Section */}
-        <div
-          id="resume-preview"
-          className="w-full md:w-1/2 bg-white p-8 rounded-lg shadow-md"
-          style={{ color: fontColor, fontFamily, minHeight: '100vh' }}
-        >
+        {/* Resume Preview Section - Compact with Lines */}
+<div
+  id="resume-preview"
+  className="w-full md:w-1/2 bg-white p-4 rounded shadow text-sm"
+  style={{ color: fontColor, fontFamily }}
+>
+  {formData.photo && (
+    <div className="flex justify-center mb-2">
+      <img src={formData.photo} alt="Profile" className="w-20 h-20 rounded-full object-cover" />
+    </div>
+  )}
 
-          {formData.photo && (
-            <div className="flex justify-center mb-6">
-              <img src={formData.photo} alt="Profile" className="w-28 h-28 rounded-full object-cover" />
-            </div>
-          )}
+  <h2 className="text-xl font-bold text-center mb-1">{formData.fullName || 'Your Name'}</h2>
+  <p className="text-center text-xs text-gray-700 mb-2">
+    {formData.email || 'email@example.com'} | {formData.phone || '123-456-7890'} | {formData.address || 'Your Address'}
+  </p>
+  <hr className="my-2" />
 
-          <h2 className="text-3xl font-bold text-center">
-            {formData.fullName || 'Your Name Here'}
-          </h2>
-          <p className="text-center">
-            {(formData.email || 'email@example.com')} | {(formData.phone || '123-456-7890')} | {(formData.address || 'Your Address')}
-          </p>
-
-          <hr className="my-6" />
-
-          {/* Education */}
-          {formData.education.length > 0 && (
-            <>
-              <h3 className="text-xl font-semibold mb-3">Education</h3>
-              {formData.education.map((edu, idx) => (
-                <div key={idx} className="mb-4">
-                  <p className="font-semibold">{edu.degree}</p>
-                  <div className="flex justify-between text-sm text-gray-600">
-                    <span>{edu.school}, {edu.year}</span>
-                    <span>Grade: {edu.grade}</span>
-                  </div>
-                </div>
-              ))}
-              <hr className="my-4" />
-            </>
-          )}
-
-          {/* Experience */}
-          {formData.experience.length > 0 && (
-            <>
-              <h3 className="text-xl font-semibold mb-3">Experience</h3>
-              {formData.experience.map((exp, idx) => (
-                <div key={idx} className="mb-4">
-                  <p className="font-semibold">{exp.role}</p>
-                  <p className="text-sm text-gray-600">{exp.company} | {exp.duration}</p>
-                </div>
-              ))}
-              <hr className="my-4" />
-            </>
-          )}
-
-          {/* Projects */}
-          {formData.projects.length > 0 && (
-            <>
-              <h3 className="text-xl font-semibold mb-3">Projects</h3>
-              {formData.projects.map((proj, idx) => (
-                <div key={idx} className="mb-4">
-                  <p className="font-semibold">{proj.name}</p>
-                  <p className="text-sm text-gray-600">- {proj.description}</p>
-                </div>
-              ))}
-              <hr className="my-4" />
-            </>
-          )}
-
-          {/* Certifications */}
-          {formData.certifications.length > 0 && (
-            <>
-              <h3 className="text-xl font-semibold mb-3">Certifications</h3>
-              {formData.certifications.map((cert, idx) => (
-                <div key={idx} className="mb-4">
-                  <p className="font-semibold">{cert.name}</p>
-                  <p className="text-sm text-gray-600">- Issued by {cert.issuer}, {cert.year}</p>
-                </div>
-              ))}
-              <hr className="my-4" />
-            </>
-          )}
-
-          {/* Skills */}
-          {formData.skills && (
-            <>
-              <h3 className="text-xl font-semibold mb-3">Skills</h3>
-              <ul className="list-disc ml-6 text-gray-700">
-                {formData.skills.split(',').map((skill, idx) => (
-                  <li key={idx} className="capitalize">{skill.trim()}</li>
-                ))}
-              </ul>
-              <hr className="my-4" />
-            </>
-          )}
-
-          {/* Achievements */}
-          {formData.achievements && (
-            <>
-              <h3 className="text-xl font-semibold mb-3">Achievements</h3>
-              <p className="text-gray-700">{formData.achievements}</p>
-              <hr className="my-4" />
-            </>
-          )}
-
-          {/* Activities */}
-          {formData.activities && (
-            <>
-              <h3 className="text-xl font-semibold mb-3">Activities</h3>
-              <p className="text-gray-700">{formData.activities}</p>
-            </>
-          )}
+  {/* Education */}
+  {formData.education.length > 0 && (
+    <>
+      <h3 className="text-sm font-semibold mb-1">Education</h3>
+      {formData.education.map((edu, idx) => (
+        <div key={idx} className="mb-1">
+          <p className="font-medium">{edu.degree}</p>
+          <p className="text-xs text-gray-600">{edu.school}, {edu.year} | Grade: {edu.grade}</p>
         </div>
+      ))}
+      <hr className="my-2" />
+    </>
+  )}
+
+  {/* Experience */}
+  {formData.experience.length > 0 && (
+    <>
+      <h3 className="text-sm font-semibold mb-1">Experience</h3>
+      {formData.experience.map((exp, idx) => (
+        <div key={idx} className="mb-1">
+          <p className="font-medium">{exp.role}</p>
+          <p className="text-xs text-gray-600">{exp.company} | {exp.duration}</p>
+        </div>
+      ))}
+      <hr className="my-2" />
+    </>
+  )}
+
+  {/* Projects */}
+  {formData.projects.length > 0 && (
+    <>
+      <h3 className="text-sm font-semibold mb-1">Projects</h3>
+      {formData.projects.map((proj, idx) => (
+        <div key={idx} className="mb-1">
+          <p className="font-medium">{proj.name}</p>
+          <p className="text-xs text-gray-600">- {proj.description}</p>
+        </div>
+      ))}
+      <hr className="my-2" />
+    </>
+  )}
+
+  {/* Certifications */}
+  {formData.certifications.length > 0 && (
+    <>
+      <h3 className="text-sm font-semibold mb-1">Certifications</h3>
+      {formData.certifications.map((cert, idx) => (
+        <div key={idx} className="mb-1">
+          <p className="font-medium">{cert.name}</p>
+          <p className="text-xs text-gray-600">Issued by {cert.issuer}, {cert.year}</p>
+        </div>
+      ))}
+      <hr className="my-2" />
+    </>
+  )}
+
+  {/* Skills */}
+  {formData.skills && (
+    <>
+      <h3 className="text-sm font-semibold mb-1">Skills</h3>
+      <ul className="list-disc ml-4 text-xs text-gray-700 mb-1">
+        {formData.skills.split(',').map((skill, idx) => (
+          <li key={idx} className="capitalize">{skill.trim()}</li>
+        ))}
+      </ul>
+      <hr className="my-2" />
+    </>
+  )}
+
+  {/* Achievements */}
+  {formData.achievements && (
+    <>
+      <h3 className="text-sm font-semibold mb-1">Achievements</h3>
+      <p className="text-xs text-gray-700 mb-1">{formData.achievements}</p>
+      <hr className="my-2" />
+    </>
+  )}
+
+  {/* Activities */}
+  {formData.activities && (
+    <>
+      <h3 className="text-sm font-semibold mb-1">Activities</h3>
+      <p className="text-xs text-gray-700">{formData.activities}</p>
+      <hr className="my-2" />
+    </>
+  )}
+</div>
 
       </div>
     </div>

@@ -43,13 +43,13 @@ const Dashboard = () => {
 
   const fetchSavedResumes = async () => {
     try {
-      const token = localStorage.getItem('token'); // ✅ IMPORTANT: Always send token
+      const token = localStorage.getItem('token');
       if (!token) {
         console.error('Token not found.');
         return;
       }
 
-      const response = await axios.get('http://localhost:5000/api/resume', {  // ✅ Correct API URL
+      const response = await axios.get('http://localhost:5000/api/resume/load', {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -63,7 +63,7 @@ const Dashboard = () => {
 
   const handleDeleteResume = async (id) => {
     try {
-      const token = localStorage.getItem('token'); // ✅ send token on delete also
+      const token = localStorage.getItem('token');
       await axios.delete(`http://localhost:5000/api/resume/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`
@@ -145,11 +145,11 @@ const Dashboard = () => {
                 <h3 className="text-xl font-semibold capitalize mb-2">
                   {resume.templateType} Resume
                 </h3>
-                <p className="text-gray-500 mb-4">{resume.resumeData?.fullName}</p> {/* ✅ resumeData not formData */}
+                <p className="text-gray-500 mb-4">{resume.resumeData?.fullName}</p>
 
                 <div className="flex justify-between">
                   <button
-                    onClick={() => navigate(`/view-resume/${resume._id}`)}
+                    onClick={() => navigate(`/saved-resume/${resume._id}`)}
                     className="text-blue-600 hover:underline"
                   >
                     View

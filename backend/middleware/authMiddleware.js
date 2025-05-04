@@ -17,5 +17,6 @@ const protect = (req, res, next) => {
 };
 
 // module.exports = { protect };
-module.exports = { verifyToken: protect };
+// Fix this in authMiddleware.js
+module.exports = { protect };
 

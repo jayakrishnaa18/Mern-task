@@ -15,15 +15,9 @@ connectDB();
 const app = express();
 
 // Middleware
-// Middleware
 app.use(cors());
-app.use(express.json({ limit: '10mb' })); // ⬅️ Updated to allow large payloads
-app.use(express.urlencoded({ limit: '10mb', extended: true })); // ⬅️ also handle URL-encoded data
-
-
-// Increase body size limit to fix "Payload Too Large" error 👇
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json({ limit: '10mb' })); // For JSON payloads
+app.use(express.urlencoded({ extended: true, limit: '10mb' })); // For form submissions
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -35,19 +29,18 @@ app.get('/', (req, res) => {
 });
 
 // Start server
-const PORT = process.env.PORT || 5000;
-
+const PORT = process.env.PORT || 5001;
 const server = app.listen(PORT, () => {
   console.log(`✅ Server running on port ${PORT}`);
 });
 
-// Handle errors gracefully
+// Error handling
 process.on('uncaughtException', (err) => {
   console.error('There was an uncaught error', err);
-  process.exit(1); // Mandatory (as per Node docs)
+  process.exit(1);
 });
 
 process.on('unhandledRejection', (err) => {
   console.error('Unhandled rejection', err);
-  server.close(() => process.exit(1)); // Close server & exit
+  server.close(() => process.exit(1));
 });
