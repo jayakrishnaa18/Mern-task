@@ -40,3 +40,68 @@
 .read-the-docs {
   color: #888;
 }
+@media print {
+  .page-break {
+    page-break-before: always;
+  }
+}
+
+/* Add to your resume preview component's style */
+#resume-preview {
+  width: 210mm; /* A4 width */
+  min-height: 297mm; /* A4 height */
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.ripple-button {
+  position: relative;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.ripple-button .ripple {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 9999px;
+  transform: scale(0);
+  animation: ripple-animation 0.6s linear;
+  pointer-events: none;
+  z-index: 1;
+}
+
+@keyframes ripple-animation {
+  to {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+@keyframes fade-in-up {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.8s ease-out both;
+}
+
+@keyframes bounce-slow {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+.animate-bounce-slow {
+  animation: bounce-slow 1.2s infinite;
+}

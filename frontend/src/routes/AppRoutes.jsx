@@ -5,8 +5,6 @@ import ForgotPassword from '../components/Auth/ForgotPassword';
 import Dashboard from '../components/Dashboard/Dashboard';
 import PrivateRoute from '../components/PrivateRoute';
 import ResumeBuilder from '../pages/ResumeBuilder';
-import SavedResumes from '../pages/SavedResumes';
-import SavedResumeView from '../pages/SavedResumeView';
 
 const AppRoutes = () => {
   return (
@@ -16,7 +14,6 @@ const AppRoutes = () => {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
-      {/* <Route path="/saved-resumes" element={<SavedResumes />} /> */}
 
       {/* Protected Routes */}
       <Route
@@ -33,24 +30,6 @@ const AppRoutes = () => {
         element={
           <PrivateRoute>
             <ResumeBuilder />
-          </PrivateRoute>
-        }
-      />
-
-      <Route
-        path="/saved-resumes"
-        element={
-          <PrivateRoute>
-            <SavedResumes />
-          </PrivateRoute>
-        }
-      />
-
-      <Route
-        path="/saved-resume/:id"
-        element={
-          <PrivateRoute>
-            <SavedResumeView />
           </PrivateRoute>
         }
       />
