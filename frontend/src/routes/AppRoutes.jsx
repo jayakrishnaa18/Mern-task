@@ -4,7 +4,8 @@ import Register from '../components/Auth/Register';
 import ForgotPassword from '../components/Auth/ForgotPassword';
 import Dashboard from '../components/Dashboard/Dashboard';
 import PrivateRoute from '../components/PrivateRoute';
-import ResumeBuilder from '../pages/ResumeBuilder';
+import ResumeFormEditor from '../pages/ResumeFormEditor';
+import ResumeTemplates from '../pages/ResumeTemplates';
 
 const AppRoutes = () => {
   return (
@@ -26,10 +27,19 @@ const AppRoutes = () => {
       />
 
       <Route
-        path="/resume-builder/:templateType"
+        path="/resume-form/:templateType"
         element={
           <PrivateRoute>
-            <ResumeBuilder />
+            <ResumeFormEditor />
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/resume-templates/:templateType"
+        element={
+          <PrivateRoute>
+            <ResumeTemplates />
           </PrivateRoute>
         }
       />
